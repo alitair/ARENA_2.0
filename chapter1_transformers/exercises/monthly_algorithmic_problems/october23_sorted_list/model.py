@@ -13,7 +13,7 @@ def create_model(
     n_heads: int,
     d_mlp: Optional[int],
     normalization_type: Optional[str],
-    device: str = "cuda",
+    device: str = "cpu",
     **kwargs # ignore other kwargs
 ) -> HookedTransformer:
 
