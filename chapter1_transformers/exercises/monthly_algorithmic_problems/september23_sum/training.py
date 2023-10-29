@@ -9,8 +9,12 @@ from torch.utils.data import DataLoader
 import einops
 import wandb
 
+import torch.nn as nn
+from transformer_lens import utils, ActivationCache, HookedTransformer, HookedTransformerConfig
+
 from monthly_algorithmic_problems.september23_sum.dataset import SumDataset
 from monthly_algorithmic_problems.september23_sum.model import create_model
+
 
 
 @dataclass
@@ -32,6 +36,7 @@ class TrainArgs:
     normalization_type: Optional[str]
     use_wandb: bool
     device: str
+    corr_loss: nn.Module = None
 
     def __post_init__(self):
         self.seq_len = self.num_digits * 3 + 2 # We have [{a}, +, {b}, =, {a+b}]
@@ -39,7 +44,16 @@ class TrainArgs:
 class Trainer:
     def __init__(self, args: TrainArgs):
         self.args = args
+
         self.model = create_model(**args.__dict__) # Not great practice I think, but ¯\_(ツ)_/¯
+        
+        if self.args.corr_loss is not None:
+            corr_loss = self.args.corr_loss
+            self.model.reset_hooks()
+            for layer in range( self.args.n_layers)  :
+                self.model.add_hook( utils.get_act_name("result", layer), corr_loss.result_hook(layer)  )
+
+
         if args.use_wandb:
             wandb.init(project="sum-model")
             wandb.watch(self.model)
@@ -51,6 +65,11 @@ class Trainer:
             einops.rearrange(logprobs, "batch seq vocab_out -> (batch seq) vocab_out"), 
             einops.rearrange(target, "batch seq -> (batch seq)"),
         )
+        # print("cross-entropy", loss.item())
+        if self.args.corr_loss is not None:
+            c_loss = self.args.corr_loss.get_loss()/700.0
+            # print("corr-loss", c_loss.item())
+            loss += c_loss
         return loss
     
     def validation_step(self, toks: Tensor) -> t.Tensor:

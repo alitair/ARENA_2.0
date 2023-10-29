@@ -24,7 +24,10 @@ def create_model(
     cfg = HookedTransformerConfig(
         
         n_layers=n_layers,
-        n_ctx=num_digits*3 + 2, # We have [{a}, +, {b}, =, {a+b}]
+
+        #mod
+        n_ctx=num_digits*3 + 3, # We have [START,{a}, +, {b}, =, {a+b}]
+
         d_model=d_model,
         d_head=d_head,
         n_heads=n_heads,
@@ -33,7 +36,9 @@ def create_model(
         act_fn="relu",
 
         # We have all digits, and "+="
-        d_vocab=12,
+        
+        #mod
+        d_vocab=13,
 
         # it's a small transformer so may as well use these hooks
         use_attn_result=True,

@@ -1,55 +1,59 @@
+import itertools
+import numpy as np
 import torch as t
 from torch.utils.data import Dataset
 
+class Pairs :
 
+    def __init__(self, digits=4 ):
+        self.digits = digits
+        self.cases  = [ [ [a,b] for a in range(10) for b in range(10) if (a+b<9) ],
+                        [ [a,b] for a in range(10) for b in range(10) if (a+b==9)],
+                        [ [a,b] for a in range(10) for b in range(10) if (a+b>9) ]  ]
+
+        values = [ i for i in range(3)]
+        p      = np.array( list(itertools.product(values, repeat=digits-1))) 
+        zeros  = np.zeros( (p.shape[0],1), dtype=int)
+        Pairs.p = np.concatenate((zeros,p), axis=1)
+
+    def generate_one(self) :
+
+        digits = lambda case : self.cases[case][np.random.randint(0,len(self.cases[case]))]
+        pair   = lambda case : [ digits( self.p[case][d] ) for d in range(self.digits) ] 
+        toint  = lambda a    : int(''.join(map(str, a)))   
+        def to_intlist( a ) :
+            padded_string = str(a).zfill(4)
+            return [ int(digit) for digit in padded_string]
+
+        case = np.random.randint(0,self.p.shape[0])
+
+        p = pair(case)
+        a, b = zip(*[(value[0], value[1]) for value in p])
+        c = to_intlist( toint(a) + toint(b) )
+        return a,b,c,case
 
 class SumDataset(Dataset):
 
-    def __init__(self, size: int, num_digits: int, seed: int = 42):
-        '''
-        Dataset of the form [a1, ..., an, +, b1, ..., bn, =, c1, ..., cn], where the sum
-        of the numbers with digits a & b equals c.
+    def __init__(self, size: int, num_digits: int,seed=42):
 
-        The digits in a and b are uniformly chosen from 0 to 9 inclusive, except for the
-        first digits which are between 0 to 4 inclusive (to make sure the sum is also a 
-        4-digit number).
-        '''
-        self.vocab = [str(i) for i in range(10)] + ["+", "="]
+        np.random.seed(seed)
+        t.manual_seed(seed)
+
+        self.pairs = Pairs(digits=num_digits)
+
+        self.vocab       = [str(i) for i in range(10)] + ["+", "=", "ST"]
+        self.vocab_index = { self.vocab[i] : i for i in range(len(self.vocab)) }
         self.size = size
         self.num_digits = num_digits
-        t.manual_seed(seed)  # for reproducible results
 
-        # Generate our sequences, and labels
-        a_as_tokens = t.concat([
-            t.randint(low=0, high=5, size=(size, 1)),
-            t.randint(low=0, high=10, size=(size, num_digits-1)),
-        ], dim=1)
-        a_as_int = t.sum(a_as_tokens * 10**t.arange(num_digits).flip(0), dim=-1)
+        def generate_one() :
+            a,b,c,p = self.pairs.generate_one()
+            return  [self.vocab_index["ST"]] + list(a) + [self.vocab_index["+"]] + list(b) + [self.vocab_index["="]] + list(c) , p
 
-        b_as_tokens = t.concat([
-            t.randint(low=0, high=5, size=(size, 1)),
-            t.randint(low=0, high=10, size=(size, num_digits-1)),
-        ], dim=1)
-        b_as_int = t.sum(b_as_tokens * 10**t.arange(num_digits).flip(0), dim=-1)
+        toks, p = zip(*[generate_one() for _ in range(size)])
 
-        sum_as_int = a_as_int + b_as_int
-        sum_as_tokens = t.stack([
-            sum_as_int // 10**i % 10
-            for i in reversed(range(num_digits))
-        ], dim=1)
-        
-        self.toks = t.concat([
-            a_as_tokens,
-            t.full((size, 1), self.vocab.index("+")),
-            b_as_tokens,
-            t.full((size, 1), self.vocab.index("=")),
-            sum_as_tokens,
-        ], dim=1)
-
-        self.str_toks = [
-            [self.vocab[tok] for tok in toks]
-            for toks in self.toks
-        ]
+        self.toks = t.tensor(toks)
+        self.p    = t.tensor(p)
 
     def __getitem__(self, index):
         return self.toks[index]
@@ -60,6 +64,7 @@ class SumDataset(Dataset):
     def to(self, device: str):
         self.toks = self.toks.to(device)
         return self
+
 
 
 
