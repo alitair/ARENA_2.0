@@ -32,6 +32,21 @@ class Pairs :
         c = to_intlist( toint(a) + toint(b) )
         return a,b,c,case
 
+    @staticmethod
+    def is_carry( ps, digit) :
+        c = Pairs.p[ ps ]
+        if ( c[digit] == 2 ) :
+            return 1
+        elif ( digit+1 <= 3  and c[digit] == 1 and c[digit+1] == 2 ) :
+            return 1
+        elif ( digit+2 <= 3  and c[digit] == 1 and c[digit+1] == 1  and c[digit+2] == 2 ) :
+            return 1
+        elif ( digit+3 <= 3  and c[digit] == 1 and c[digit+1] == 1  and c[digit+2] == 1  and c[digit+3] == 2 ) :
+            return 1
+        return 0
+
+    
+
 class SumDataset(Dataset):
 
     def __init__(self, size: int, num_digits: int,seed=42):
@@ -41,14 +56,16 @@ class SumDataset(Dataset):
 
         self.pairs = Pairs(digits=num_digits)
 
-        self.vocab       = [str(i) for i in range(10)] + ["+", "=", "ST"]
+        self.english = [ "ST", "L1000", "L100 ", "L10  ", "L1   ", "+", "R1000", "R100 ", "R10  ", "R1   ", "=", "S1000", "S100 ", "S10  ", "S1   "]
+
+        self.vocab       = [str(i) for i in range(10)] + [" + ", " = ", "ST "]
         self.vocab_index = { self.vocab[i] : i for i in range(len(self.vocab)) }
         self.size = size
         self.num_digits = num_digits
 
         def generate_one() :
             a,b,c,p = self.pairs.generate_one()
-            return  [self.vocab_index["ST"]] + list(a) + [self.vocab_index["+"]] + list(b) + [self.vocab_index["="]] + list(c) , p
+            return  [self.vocab_index["ST "]] + list(a) + [self.vocab_index[" + "]] + list(b) + [self.vocab_index[" = "]] + list(c) , p
 
         toks, p = zip(*[generate_one() for _ in range(size)])
 
@@ -65,6 +82,10 @@ class SumDataset(Dataset):
         self.toks = self.toks.to(device)
         return self
 
-
-
+    def format(self , index) :
+        toks = self.toks[index]
+        return "".join( [self.vocab[tok] for tok in toks])
+    
+    def format_word(self, word) :
+        return self.english[word]
 
