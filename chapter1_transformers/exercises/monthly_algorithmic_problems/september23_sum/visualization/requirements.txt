@@ -1,0 +1,5 @@
+extra_streamlit_components==0.1.60
+numpy==1.24.3
+st_annotated_text==4.0.1
+streamlit==1.29.0
+streamlit_agraph==0.0.45
