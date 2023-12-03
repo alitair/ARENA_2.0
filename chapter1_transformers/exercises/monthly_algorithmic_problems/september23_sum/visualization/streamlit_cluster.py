@@ -1,4 +1,4 @@
-
+import os
 from operator import itemgetter
 import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config
@@ -9,6 +9,7 @@ import numpy as np
 import extra_streamlit_components as stx
 
 
+path = os.path.dirname(__file__)
 
 digits      = [ i for i in range(10,14) ] 
 digit_key   = lambda digit : ('attn_out', 1, None, int(digit) ) 
@@ -29,7 +30,7 @@ def desc(ex, digit ) :
 
 group   = lambda key : f"L{key[1]}H{key[2]}"
 
-with open( f"examples.pkl", 'rb') as file:
+with open( f"{path}/examples.pkl", 'rb') as file:
     examples = pickle.load(file)
 
 if 'ex' not in st.session_state:
@@ -40,7 +41,7 @@ if 'ex' not in st.session_state:
 st.title("Interpretability through clustering")
 st.markdown("**How are activations in a transformer clustered together and what can we learn?**  \nActivations below are from a 2 layer, 3 head, 48 dimension transformer trained to solve 4 digit addition.")
 
-st.image("4digit.png", use_column_width=True)
+st.image(f"{path}/4digit.png", use_column_width=True)
 
 st.markdown("Follow the calculation to see how activations are grouped together to form token predictions.")
 
