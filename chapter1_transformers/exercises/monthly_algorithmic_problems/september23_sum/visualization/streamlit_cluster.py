@@ -39,11 +39,20 @@ if 'ex' not in st.session_state:
 
 
 st.title("Interpretability through clustering")
-st.markdown("**How are activations in a transformer clustered together and what can we learn?**  \nActivations below are from a 2 layer, 3 head, 48 dimension transformer trained to solve 4 digit addition.")
+st.markdown("**How are activations in a transformer clustered together and what can we learn?**")
 
-st.image(f"{path}/4digit.png", use_column_width=True)
+st.markdown('''There has been a lot of progress using unsupervised methods (such as sparse autoencoders)  to find monosemantic features in LLMs. However, is there a way that we can interpret activations without breaking them down into features? 
 
-st.markdown("Follow the calculation to see how activations are grouped together to form token predictions.")
+The answer is yes. I contend that clustering activations (from a large dataset of examples) reveals strong interpretability.  The  process is simple. Choose any example and then find a set of activations that are L2 closest at your favorite activation stage.  Semantic meaning of that stage can then be inferred by recognizing similarities in the examples that make up that set. 
+
+In some ways, cluster analysis is like the logit lens in that it focuses on what the transformer believes after each step. However cluster analysis reveals additional insight and detail. 
+
+Consider a  simple case. Using a transformer trained to do 4 digit addition,  we can examine particular stages (e.g.  transformer lens: “pattern”, “result” , “attn_out” ) at all layers, heads and words to see the examples that are grouped tougher. This grouping can be interpreted to see how the transformer solves the problem.
+
+To add two numbers (e.g. L + R = Sum), the transformer has to both select and sum the correct digit from L and R while also factoring in the appropriate carry. 
+
+Using clustering it is easy to see the specific steps where the transformer separately focuses on each of these tasks. Click below to experiment. 
+''')
 
 st.divider()
 
@@ -92,6 +101,9 @@ def create_nodes_edges( digit ) :
 
     return list(nodes_used), edges
 
+
+st.caption("Click to see how the transformer solves for each summed digit.")
+
 tab_data = [ stx.TabBarItemData(id=digit, title=opt, description=desc(example, digit ) ) for opt, digit in zip(options.keys(),digits) ] 
 digit    = stx.tab_bar( data=tab_data, default=digits[0])
 
@@ -128,7 +140,10 @@ with col2 :
 
 st.caption('A transformer visualized as a graph of activations. Transformer lens : pattern, result and attn_out stages are shown. Graph edges are formed where attention pattern is greater than .1, or where head specific results are summed to form attn_out.  Edges were pruned if mean ablation showed that they did not change the output.  The calculation proceeds from bottom to top (e.g.  graph depencdency is from top to bottom). The example set is formed from 5000 random additions.')
 
-st.link_button("reference on transformer steps", "https://arena-ch1-transformers.streamlit.app/~/+/Reference_Page#diagrams", help=None, type="secondary", disabled=False, use_container_width=False)
+st.markdown("Activations above are from a 2 layer, 3 head, 48 dimension transformer trained to solve 4 digit addition.")
+
+st.image(f"{path}/4digit.png", use_column_width=True)
 
 st.link_button("details on 4 digit addition", "https://arena-ch1-transformers.streamlit.app/~/+/Monthly_Algorithmic_Problems#monthly-algorithmic-challenge-november-2023-cumulative-sum", help=None, type="secondary", disabled=False, use_container_width=False)
 
+st.link_button("reference on transformer steps", "https://arena-ch1-transformers.streamlit.app/~/+/Reference_Page#diagrams", help=None, type="secondary", disabled=False, use_container_width=False)
