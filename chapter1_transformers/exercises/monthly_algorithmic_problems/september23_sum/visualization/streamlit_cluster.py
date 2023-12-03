@@ -86,7 +86,7 @@ def create_nodes_edges( digit ) :
 
     digit_key_start =  digit_key(digit)
 
-    nodes = { key : Node(id=key_to_int[key],  title=title(key), label=similarities[key][0], group=group(key,digit), shape="dot",size=size(key,digit)) for key in similarities.keys()  }
+    nodes = { key : Node(id=key_to_int[key],  title=title(key),  label=similarities[key][0], group=group(key,digit), shape="dot",size=size(key,digit)) for key in similarities.keys()  }
     nodes_used = set()
 
     edges = []
