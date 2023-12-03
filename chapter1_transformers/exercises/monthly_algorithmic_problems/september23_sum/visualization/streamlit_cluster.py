@@ -105,7 +105,7 @@ if 'digit' not in st.session_state or st.session_state['digit'] != digit or 'nod
     nodes, edges = create_nodes_edges( digit ) 
     st.session_state['nodes'] = nodes
     st.session_state['edges'] = edges
-    st.session_state['config'] = Config(from_json="config.json") 
+    st.session_state['config'] = Config(from_json=f"{path}/config.json") 
 
 col1, col2 = st.columns(2)
 
