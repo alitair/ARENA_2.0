@@ -28,19 +28,16 @@
   },
   "groups": {
     "0": {
-      "color": "#888888"
+      "color": "#f3f3f3"
     },
     "1": {
-      "color": "#aed0e8"
+      "color": "#c5e898"
     },
     "2": {
-      "color": "#003459"
+      "color": "#29adb2"
     },
     "3": {
-      "color": "#007ea7"
-    },
-    "4": {
-      "color": "#30b7eb"
+      "color": "#5fbdff"
     }
   },
   "minVelocity": 1,

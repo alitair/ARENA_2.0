@@ -80,7 +80,8 @@ def group(key,digit) :
     #group 1 digit is correct
     
     group = 0
-    sum_is_correct   = (len(ex[digit+1]) > 1) #and ex[digit+1][1].startswith(' ')
+    print( key, ex[digit+1])
+    sum_is_correct   = (len(ex[digit+1]) > 1) and ( ex[digit+1][2] == "#5fbdff" )
     if (digit<13) :
         carry_is_correct = (len(ex[digit+2]) > 1) 
         if sum_is_correct and carry_is_correct :
