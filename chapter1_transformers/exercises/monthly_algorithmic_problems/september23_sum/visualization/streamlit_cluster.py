@@ -170,9 +170,10 @@ with col2 :
     for ex in exs :
         annotated_text(ex[1:])
 
-
 st.caption('A transformer visualized as a graph of activations. Transformer lens : pattern, result and attn_out stages are shown. Graph edges are formed where attention pattern is greater than .1, or where head specific results are summed to form attn_out.  Edges were pruned if mean ablation showed that they did not change the output.  The calculation proceeds from bottom to top (e.g.  graph dependency is from top to bottom). The example set is formed from 5000 random additions.')
 
+
+st.subheader("Some details...")
 st.markdown("Activations above are from a 2 layer, 3 head, 48 dimension transformer trained to solve 4 digit addition.")
 
 st.image(f"{path}/4digit.png", use_column_width=True)
