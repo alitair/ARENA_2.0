@@ -72,15 +72,46 @@ int_to_key = {key_to_int[key]: key for key in key_to_int.keys() }
 
 def group(key,digit) :
     digit = int(digit)
-    ex = similarities[key][1][0]
-    on_path = (len(ex[digit-9])> 1) or (len(ex[digit-4]) > 1) or (len(ex[digit+1]) > 1)
-    if (digit<13) :
-        on_path = on_path or (len(ex[digit+2]) > 1) 
+    ex    = similarities[key][1][0]
 
-    return  1 if on_path else 0
+    #group 4 sum, carry correct
+    #group 3 only sum is correct
+    #group 2 only carry is correct
+    #group 1 digit is correct
+    
+    group = 0
+    sum_is_correct   = (len(ex[digit+1]) > 1) #and ex[digit+1][1].startswith(' ')
+    if (digit<13) :
+        carry_is_correct = (len(ex[digit+2]) > 1) 
+        if sum_is_correct and carry_is_correct :
+            group = 4
+            print(key, ex[digit+1], ex[digit+2] )
+        elif sum_is_correct  :
+            group = 3
+        elif carry_is_correct :
+            group = 2
+    else :
+        if sum_is_correct :
+            group = 4
+
+    digit_is_correct = ((len(ex[digit-9])> 1) or (len(ex[digit-4]) > 1))
+    if group==0 and digit_is_correct :
+        group = 1
+    print( key , group)
+    return  str(group)
 
 def size(key,digit) :
-    return 40 if group(key,digit) else 10
+    g = int(group(key,digit))
+    if g==4 :
+        return 50
+    elif g==3 :
+        return 30 
+    elif g==2 :
+        return 30
+    elif g==1 :
+        return 20
+    else :
+        return 10 
 
 def create_nodes_edges( digit ) :
 
@@ -122,6 +153,7 @@ if 'digit' not in st.session_state or st.session_state['digit'] != digit or 'nod
 col1, col2 = st.columns(2)
 
 with col1 :
+
     st.caption('Large circles are activations with relevant features.  \n:blue[Hover] to see node details (transformer step).  \n:blue[Zoom] to see patterns in the activations.  \n:blue[Click] to see closest examples in activation space)')
     node_id = agraph(nodes=st.session_state['nodes'], edges=st.session_state['edges'], config=st.session_state['config']) 
     if node_id is None :

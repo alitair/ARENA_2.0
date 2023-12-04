@@ -26,7 +26,23 @@
       "shakeTowards": "roots"
     }
   },
-  "groups": null,
+  "groups": {
+    "0": {
+      "color": "#888888"
+    },
+    "1": {
+      "color": "#aed0e8"
+    },
+    "2": {
+      "color": "#003459"
+    },
+    "3": {
+      "color": "#007ea7"
+    },
+    "4": {
+      "color": "#30b7eb"
+    }
+  },
   "minVelocity": 1,
   "maxVelocity": 100,
   "stabilization": true,
