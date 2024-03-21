@@ -15,8 +15,8 @@
   "layout": {
     "hierarchical": {
       "enabled": true,
-      "levelSeparation": 200,
-      "nodeSpacing": 100,
+      "levelSeparation": 400,
+      "nodeSpacing": 50,
       "treeSpacing": 250,
       "blockShifting": true,
       "edgeMinimization": true,
@@ -46,7 +46,7 @@
   "fit": true,
   "timestep": 0.5,
   "solver": "barnesHut",
-  "levelSeparation": 200,
+  "levelSeparation": 100,
   "nodeSpacing": 100,
   "treeSpacing": 250,
   "blockShifting": true,

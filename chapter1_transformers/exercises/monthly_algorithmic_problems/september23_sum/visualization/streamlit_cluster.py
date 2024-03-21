@@ -7,8 +7,9 @@ from streamlit_agraph.config import Config, ConfigBuilder
 from annotated_text import annotated_text
 import numpy as np
 import extra_streamlit_components as stx
+from collections import defaultdict 
 
-
+st.set_page_config(layout="wide")
 path = os.path.dirname(__file__)
 
 digits      = [ i for i in range(10,14) ] 
@@ -62,13 +63,14 @@ if st.button("Generate an example", type="primary") :
     st.session_state['digit'] = None
 
 
-example, similarities, dependency = examples[ st.session_state['ex'] ]
+example, similarities, dependency, losses = examples[ st.session_state['ex'] ]
     
 annotated_text( example[1:] )
 
 key_to_int = {key: index for index, key in enumerate(dependency.keys())}
 int_to_key = {key_to_int[key]: key for key in key_to_int.keys() }
-
+key_to_int = defaultdict(lambda: -1, key_to_int)
+int_to_key = defaultdict(lambda: -1, int_to_key)
 
 def group(key,digit) :
     digit = int(digit)
@@ -114,22 +116,38 @@ def size(key,digit) :
     else :
         return 10 
 
+def sz(loss) :
+    loss = 30 * max( 0.0 , 1.0 - min( 1.0, loss )  )
+    return int(loss)
+
+
 def create_nodes_edges( digit ) :
 
     digit_key_start =  digit_key(digit)
 
-    nodes = { key : Node(id=key_to_int[key],  title=title(key),  label=similarities[key][0], group=group(key,digit), shape="dot",size=size(key,digit)) for key in similarities.keys()  }
+    nodes = { key : Node(id=key_to_int[key],  title=title(key),  label=similarities[key][0], group=group(key,digit), shape="dot",size=sz(losses[key][int(digit)])) for key in similarities.keys()  }
+    # nodes = { key : Node(id=key_to_int[key],  title=title(key),  label=similarities[key][0], group=group(key,digit), shape="dot",size=size(key,digit)) for key in similarities.keys()  }
+    nodes[-1] = Node(id=-1, label="root", shape="dot",size=1 ) 
+   
     nodes_used = set()
 
     edges = []
-    def add_edge( key ) :
+    def add_edge( key , color="#dddddd" ) :
+
+        if key == digit_key(digit) :
+            color = "#0000ff"
+
         for dependency_key in dependency[key] :
-            edges.append( Edge( source=key_to_int[key], label=" ", target=key_to_int[dependency_key]) )
+            edges.append( Edge( source=key_to_int[key], color=color, target=key_to_int[dependency_key]) )
             nodes_used.add(nodes[dependency_key])
-            add_edge( dependency_key )    
+            add_edge( dependency_key , color  )    
 
     nodes_used.add( nodes[digit_key_start] )
-    add_edge( digit_key_start  )
+    
+    dependency[-1] = [ digit_key(d) for d in digits if d != digit] + [digit_key(digit)]
+
+    add_edge( -1  )
+    # add_edge( digit_key_start  )
 
     return list(nodes_used), edges
 
@@ -151,7 +169,7 @@ if 'digit' not in st.session_state or st.session_state['digit'] != digit or 'nod
     st.session_state['edges'] = edges
     st.session_state['config'] = Config(from_json=f"{path}/config.json") 
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([3, 2])
 
 with col1 :
 
@@ -163,7 +181,7 @@ with col1 :
 
 with col2 :
 
-    st.info( title(key) )
+    st.info( f"{title(key)} : {losses[key][int(digit)]:.2f}")
     # annotated_text( example[1:] )
     st.markdown(f'**Closest other examples (in order):**')
     exs = similarities[key][1]
